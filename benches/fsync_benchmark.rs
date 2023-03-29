@@ -1,5 +1,4 @@
 use criterion::{criterion_group, criterion_main, Criterion};
-
 use std::fs;
 use std::io::prelude::*;
 
@@ -9,7 +8,6 @@ fn remove_and_create_with_size(
 ) -> fs::File
 {
 	fs::remove_file(&name).unwrap_or_else(|_| {});
-	//fs::remove_file(&name).unwrap();
 	let mut file = fs::OpenOptions::new().create(true).write(true).open(&name).unwrap();
 	let data = vec![0_u8; size];
 	file.write_all(&data).expect("Error during write_all()");
@@ -41,8 +39,9 @@ fn write_fdatasync(
 
 fn benchmark_fsync(c: &mut Criterion) 
 {
-    let file_size = 67108864;
-    let write_size = 1024;
+    let file_size = 67108864; // 64M
+    //let write_size = 1024;    // 1k
+    let write_size = 24576;   
 
     let payload = vec![0_u8; write_size];
     let mut file = remove_and_create_with_size("/tmp/test", file_size);
@@ -61,7 +60,6 @@ fn benchmark_fsync(c: &mut Criterion)
     file.rewind().unwrap();
     group.bench_function("fdatasync", |b| b.iter(|| write_fdatasync(&mut file, &payload)));
     
-
     group.finish();
 }
 
